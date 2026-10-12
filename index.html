@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ScholarFix — a static reference & formatting toolkit for academics: DOI fixer, retraction checker, citation style converter, and journal/venue formatter.">
+  <title>ScholarFix — Reference &amp; Formatting Toolkit</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23a4543a'/><text x='3' y='12' font-size='11' font-family='Georgia' fill='%23faf6ef'>S</text></svg>">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1 class="site-title">ScholarFix</h1>
+      <p class="site-tagline">Reference &amp; formatting toolkit for academics — validate and repair DOIs, screen for retracted works, restyle citations, and format manuscripts for a target venue. No account, no server; your references never leave your browser except for the metadata lookups shown below.</p>
+    </div>
+  </header>
+
+  <nav class="tab-bar" role="tablist" aria-label="Tools">
+    <div class="wrap tab-bar-inner">
+      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-doi" id="tab-doi" data-tab="doi">DOI Fixer</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-retract" id="tab-retract" data-tab="retract">Retraction Checker</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-cite" id="tab-cite" data-tab="cite">Citation Styles</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-venue" id="tab-venue" data-tab="venue">Venue Formatter</button>
+    </div>
+  </nav>
+
+  <main class="wrap">
+
+    <!-- ================= TAB 1: DOI FIXER ================= -->
+    <section class="tab-panel active" id="panel-doi" role="tabpanel" aria-labelledby="tab-doi">
+      <h2>DOI Fixer</h2>
+      <p class="panel-intro">Paste references (one per line) or upload a <code>.txt</code>, <code>.bib</code>, or <code>.ris</code> file. Each reference is validated against <a href="https://www.crossref.org/" rel="noopener">Crossref</a>; references with missing or broken DOIs are matched by title. Requires an internet connection.</p>
+
+      <div class="input-grid">
+        <div class="input-block">
+          <label for="doi-input" class="field-label">References (one per line)</label>
+          <textarea id="doi-input" rows="10" spellcheck="false" placeholder="Smith, J. (2019). Attention mechanisms in transformers. Journal of ML, 12(3), 45-61. https://doi.org/10.1000/xyz123&#10;Lee &amp; Park (2020) Deep residual learning for citation repair. arXiv…"></textarea>
+        </div>
+        <div class="input-side">
+          <label class="field-label" for="doi-file">…or upload a file</label>
+          <input type="file" id="doi-file" accept=".txt,.bib,.ris">
+          <p class="hint">.txt: one reference per line. .bib / .ris: entries are split automatically.</p>
+          <div class="button-row">
+            <button id="doi-run" class="btn primary">Check &amp; fix references</button>
+            <button id="doi-clear" class="btn ghost">Clear</button>
+          </div>
+          <p id="doi-count" class="hint" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="progress-wrap hidden" id="doi-progress-wrap" aria-live="polite">
+        <div class="progress-track"><div class="progress-fill" id="doi-progress-fill"></div></div>
+        <span class="progress-label" id="doi-progress-label">0 / 0</span>
+      </div>
+
+      <div class="results hidden" id="doi-results">
+        <h3>Results</h3>
+        <p class="hint" id="doi-summary"></p>
+        <div class="table-scroll">
+          <table class="results-table" id="doi-table">
+            <thead>
+              <tr>
+                <th>Original reference</th>
+                <th>Status</th>
+                <th>Resolved DOI</th>
+                <th>Matched title</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody id="doi-tbody"></tbody>
+          </table>
+        </div>
+        <div class="button-row">
+          <button id="doi-export-txt" class="btn">Download .txt</button>
+          <button id="doi-export-bib" class="btn">Download .bib</button>
+          <button id="doi-copy" class="btn ghost">Copy corrected list</button>
+        </div>
+      </div>
+      <p class="error-line hidden" id="doi-error" role="alert"></p>
+    </section>
+
+    <!-- ================= TAB 2: RETRACTION CHECKER ================= -->
+    <section class="tab-panel" id="panel-retract" role="tabpanel" aria-labelledby="tab-retract">
+      <h2>Retraction Checker</h2>
+      <p class="panel-intro">Paste or upload references exactly as in the DOI Fixer. Each reference is resolved to a DOI, then screened against <a href="https://openalex.org/" rel="noopener">OpenAlex</a> (<code>is_retracted</code>) and Crossref retraction/update relations. Requires an internet connection.</p>
+
+      <div class="input-grid">
+        <div class="input-block">
+          <label for="retract-input" class="field-label">References (one per line)</label>
+          <textarea id="retract-input" rows="10" spellcheck="false" placeholder="Paste references here, or upload a .txt / .bib / .ris file…"></textarea>
+        </div>
+        <div class="input-side">
+          <label class="field-label" for="retract-file">…or upload a file</label>
+          <input type="file" id="retract-file" accept=".txt,.bib,.ris">
+          <div class="button-row">
+            <button id="retract-run" class="btn primary">Check for retractions</button>
+            <button id="retract-clear" class="btn ghost">Clear</button>
+          </div>
+          <p id="retract-count" class="hint" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="progress-wrap hidden" id="retract-progress-wrap" aria-live="polite">
+        <div class="progress-track"><div class="progress-fill" id="retract-progress-fill"></div></div>
+        <span class="progress-label" id="retract-progress-label">0 / 0</span>
+      </div>
+
+      <div id="retract-banner" class="banner hidden" role="alert"></div>
+
+      <div class="results hidden" id="retract-results">
+        <h3>Results</h3>
+        <ul class="retract-list" id="retract-list"></ul>
+      </div>
+      <p class="error-line hidden" id="retract-error" role="alert"></p>
+    </section>
+
+    <!-- ================= TAB 3: CITATION STYLES ================= -->
+    <section class="tab-panel" id="panel-cite" role="tabpanel" aria-labelledby="tab-cite">
+      <h2>Citation Style Converter &amp; Formatting Checklist</h2>
+      <p class="panel-intro">Paste a <code>.bib</code> bibliography, a list of DOIs (one per line), or plain-text references. Entries are parsed with <a href="https://citation.js.org/" rel="noopener">citation.js</a>; plain-text lines are first resolved through Crossref. BibTeX and DOI parsing needs no extra lookup beyond the DOI metadata fetch; free-text lines require an internet connection.</p>
+
+      <div class="input-grid">
+        <div class="input-block">
+          <label for="cite-input" class="field-label">References or BibTeX</label>
+          <textarea id="cite-input" rows="10" spellcheck="false" placeholder="@article{vaswani2017attention,&#10;  title={Attention is all you need},&#10;  author={Vaswani, Ashish and Shazeer, Noam},&#10;  year={2017}&#10;}&#10;&#10;— or one DOI / reference per line —"></textarea>
+        </div>
+        <div class="input-side">
+          <label class="field-label" for="cite-file">…or upload a file</label>
+          <input type="file" id="cite-file" accept=".txt,.bib,.ris">
+          <label class="field-label" for="cite-style">Target style</label>
+          <select id="cite-style">
+            <option value="apa">APA 7th edition</option>
+            <option value="mla">MLA 9th edition</option>
+            <option value="chicago">Chicago 18th (author–date)</option>
+            <option value="ieee">IEEE</option>
+            <option value="vancouver">Vancouver</option>
+          </select>
+          <div class="button-row">
+            <button id="cite-run" class="btn primary">Convert</button>
+            <button id="cite-clear" class="btn ghost">Clear</button>
+          </div>
+          <p id="cite-status" class="hint" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="progress-wrap hidden" id="cite-progress-wrap" aria-live="polite">
+        <div class="progress-track"><div class="progress-fill" id="cite-progress-fill"></div></div>
+        <span class="progress-label" id="cite-progress-label">0 / 0</span>
+      </div>
+
+      <div class="results hidden" id="cite-results">
+        <h3>Preview</h3>
+        <p class="hint" id="cite-summary"></p>
+        <ol class="cite-preview" id="cite-preview"></ol>
+        <div class="button-row">
+          <button id="cite-copy" class="btn">Copy all</button>
+          <button id="cite-export-txt" class="btn ghost">Download .txt</button>
+        </div>
+      </div>
+      <p class="error-line hidden" id="cite-error" role="alert"></p>
+
+      <hr class="divider">
+
+      <section class="checklist-panel" aria-labelledby="checklist-heading">
+        <h3 id="checklist-heading">Formatting checklist</h3>
+        <p class="hint">Pick a style to see the manuscript-formatting rules most often checked before submission.</p>
+        <label class="field-label" for="checklist-style">Style guide</label>
+        <select id="checklist-style">
+          <option value="apa">APA 7th edition</option>
+          <option value="mla">MLA 9th edition</option>
+          <option value="chicago">Chicago 18th (author–date)</option>
+          <option value="ieee">IEEE</option>
+          <option value="vancouver">Vancouver</option>
+        </select>
+        <div id="checklist-content" class="checklist-content"></div>
+      </section>
+    </section>
+
+    <!-- ================= TAB 4: VENUE FORMATTER ================= -->
+    <section class="tab-panel" id="panel-venue" role="tabpanel" aria-labelledby="tab-venue">
+      <h2>Journal &amp; Venue Formatter</h2>
+      <p class="panel-intro">Choose a target venue to get an interactive checklist of its documented formatting rules, a visual preview of a manuscript excerpt styled to match, a downloadable <code>.docx</code> template, and a quick compliance check on pasted text. Rules are transcribed from each venue's official guidelines — the source and last-checked date are shown below the selector, and details a venue does not publish are marked <em>not specified</em> rather than guessed. Everything runs offline once the page has loaded, except the one-time fetch of the docx.js library for template download.</p>
+
+      <label class="field-label" for="venue-select">Target venue</label>
+      <select id="venue-select" class="venue-select"></select>
+      <p id="venue-meta" class="venue-meta hint"></p>
+
+      <h3>Style preview</h3>
+      <p class="hint">A sample manuscript excerpt rendered with the venue's documented typography. Elements the venue leaves unspecified use neutral defaults and are labeled.</p>
+      <div class="ms-preview-wrap">
+        <div id="venue-preview" class="ms-preview" aria-live="polite"></div>
+      </div>
+
+      <h3>Formatting checklist</h3>
+      <div class="check-progress" aria-live="polite">
+        <div class="progress-track"><div class="progress-fill" id="venue-progress-fill"></div></div>
+        <span class="progress-label" id="venue-progress-label">0 / 0</span>
+      </div>
+      <div id="venue-checklist" class="checklist-content"></div>
+
+      <h3>Downloadable template</h3>
+      <p class="hint">Generates a <code>.docx</code> with the venue's margins, font, spacing, title page, abstract block, and heading styles pre-configured, plus placeholders and inline notes. Uses <a href="https://github.com/dolanmiu/docx" rel="noopener">docx.js</a> from a pinned CDN (needs an internet connection the first time).</p>
+      <div class="button-row">
+        <button id="venue-docx" class="btn primary">Download .docx template</button>
+      </div>
+      <p id="venue-docx-status" class="hint" aria-live="polite"></p>
+
+      <h3>Quick compliance check</h3>
+      <p class="hint">Paste an abstract or manuscript excerpt. Checks the abstract word limit, keyword count, anonymization red flags (author-identifying material), and heading-pattern hints for the selected venue.</p>
+      <label for="venue-compliance-input" class="field-label">Text to check</label>
+      <textarea id="venue-compliance-input" rows="8" spellcheck="false" placeholder="Paste your abstract (including the Keywords: line) or a manuscript excerpt…"></textarea>
+      <div class="button-row">
+        <button id="venue-check-run" class="btn primary">Run checks</button>
+        <button id="venue-check-clear" class="btn ghost">Clear</button>
+      </div>
+      <ul id="venue-check-results" class="finding-list hidden"></ul>
+      <p class="error-line hidden" id="venue-error" role="alert"></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>ScholarFix runs entirely in your browser. Metadata lookups use the free <a href="https://api.crossref.org/" rel="noopener">Crossref</a> and <a href="https://docs.openalex.org/" rel="noopener">OpenAlex</a> APIs; citation formatting uses <a href="https://citation.js.org/" rel="noopener">citation.js</a> and official CSL styles. Always double-check results against the publisher record before submission.</p>
+    </div>
+  </footer>
+
+  <script src="js/data/styleGuides.js"></script>
+  <script src="js/data/venues.js"></script>
+  <script src="js/doi.js"></script>
+  <script src="js/formatter.js"></script>
+  <script src="js/retract.js"></script>
+  <script src="js/citations.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
